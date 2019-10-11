@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
@@ -12,6 +13,12 @@ var (
 	// gbk编码类型字符bytes的解析器
 	chDecoder = simplifiedchinese.GB18030.NewDecoder()
 )
+
+// genStockInfoURL : 生成不同页面的Url
+func genStockInfoURL(i int) string {
+	result := "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=" + strconv.Itoa(i) + "&num=100&sort=changepercent&asc=0&node=hs_a&symbol=&_s_r_a=init"
+	return result
+}
 
 // request url
 //成功  通过通道传出网页内容	字符串
@@ -39,5 +46,4 @@ func fetch(url string, ch chan string) {
 
 	//将网页源代码从[]byte转换为string,然后传出去
 	ch <- string(bodyDecoded)
-	fmt.Println(url, " 网页内容获取成功。")
 }
