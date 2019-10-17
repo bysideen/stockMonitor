@@ -12,16 +12,14 @@ func main() {
 
 	//从网页获取JSON，fetch()传回字符串形式的JSON
 
-	var allStock stockInfoList
+	var allStock = map[string]stockInfo{}
 
 	for {
-		allStock = []stockInfo{}
 		fetchAllStock(&allStock)
 
-		stock := stkLookup("sz300202", allStock)
 		fmt.Println("--------")
-		fmt.Println("股票名： ", stock.Name)
-		fmt.Println("个股当前价：", stock.Buy)
+		fmt.Println("股票名： ", allStock["sz300202"].Name)
+		fmt.Println("个股当前价：", allStock["sz300202"].Buy)
 		fmt.Println(len(allStock))
 
 		time.Sleep(2 * time.Second)
@@ -36,15 +34,14 @@ func stkLookup(symbol string, stkList stockInfoList) stockInfo {
 	}
 	return stockInfo{}
 }
-func fetchAllStock(stks *stockInfoList) {
+func fetchAllStock(stks *map[string]stockInfo) {
+
 	chFetch := make(chan string)
 
 	for i := 1; i < 40; i++ {
 		url := genStockInfoURL(i)
 		go fetch(url, chFetch)
 	}
-
-	var stkInfoListTemp stockInfoList
 
 	for i := 1; i < 40; i++ {
 		page := <-chFetch
@@ -54,10 +51,11 @@ func fetchAllStock(stks *stockInfoList) {
 		}
 
 		// fmt.Println(page)
-		stkInfoListTemp = []stockInfo{}
+		var stkInfoListTemp = stockInfoList{}
 		toolkit.JSONToStruct(page, &stkInfoListTemp)
-
-		*stks = append(*stks, stkInfoListTemp...)
+		for _, stkInfo := range stkInfoListTemp {
+			(*stks)[stkInfo.Symbol] = stkInfo
+		}
 	}
 
 }

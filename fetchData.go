@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strconv"
 
+	"github.com/GuNanHai/godom"
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
@@ -25,21 +24,10 @@ func genStockInfoURL(i int) string {
 //失败	通过通道传出url 	 字符串
 func fetch(url string, ch chan string) {
 	//连接网址,    如果失败则传出失败的url
-	resp, err := http.Get(url)
-	if err != nil {
-		ch <- url
-		fmt.Println(url, " 网页内容获取失败: ", err)
-		return
-	}
-
-	//读取网页源代码
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
+	resp := godom.Fetch(url, 20)
 
 	//对网页源代码进行转码，避免中文乱码
-	bodyDecoded, err := chDecoder.Bytes(body)
+	bodyDecoded, err := chDecoder.Bytes([]byte(resp.Raw))
 	if err != nil {
 		fmt.Println(err)
 	}
